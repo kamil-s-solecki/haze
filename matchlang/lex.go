@@ -6,6 +6,7 @@ type TokenType int
 
 const (
 	CodeToken TokenType = iota
+	SizeToken
 	EqualsToken
 	NotEqualsToken
 	LiteralToken
@@ -23,6 +24,8 @@ func lex(s string) []LexToken {
 		switch word {
 		case "code":
 			token = LexToken{Type: CodeToken}
+		case "size":
+			token = LexToken{Type: SizeToken}
 		case "=":
 			token = LexToken{Type: EqualsToken}
 		case "!=":

@@ -55,3 +55,12 @@ func TestReturnAstForCodeMatchNotEquals(t *testing.T) {
 
 	assertAstEquals(t, got, want)
 }
+
+func TestReturnAstForSizeMatch(t *testing.T) {
+	var want Ast
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: SizeIdentifier}, Right: Literal{Value: "1500"}}
+
+	got := Parse("size = 1500")
+
+	assertAstEquals(t, got, want)
+}

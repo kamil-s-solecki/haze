@@ -13,6 +13,7 @@ type IdentifierEnum int
 
 const (
 	CodeIdentifier IdentifierEnum = iota
+	SizeIdentifier
 )
 
 type Comparison struct {
@@ -38,10 +39,21 @@ func lexTokenToOperator(token LexToken) OperatorEnum {
 	return -1
 }
 
+func lexTokenToIdentifier(token LexToken) Identifier {
+	var idtype IdentifierEnum
+	switch token.Type {
+	case CodeToken:
+		idtype = CodeIdentifier
+	case SizeToken:
+		idtype = SizeIdentifier
+	}
+	return Identifier{idtype}
+}
+
 func Parse(s string) Ast {
 	tokens := lex(s)
 	return Comparison{
-		Left:     Identifier{CodeIdentifier},
+		Left:     lexTokenToIdentifier(tokens[0]),
 		Operator: lexTokenToOperator(tokens[1]),
 		Right:    Literal{tokens[2].Value},
 	}

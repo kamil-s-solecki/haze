@@ -40,9 +40,18 @@ func assertAstEquals(t *testing.T, got, want Ast) {
 
 func TestReturnAstForCodeMatch(t *testing.T) {
 	var want Ast
-	want = Comparison{Operator: Equals, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
 
 	got := Parse("code = 200")
+
+	assertAstEquals(t, got, want)
+}
+
+func TestReturnAstForCodeMatchNotEquals(t *testing.T) {
+	var want Ast
+	want = Comparison{Operator: NotEqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+
+	got := Parse("code != 200")
 
 	assertAstEquals(t, got, want)
 }

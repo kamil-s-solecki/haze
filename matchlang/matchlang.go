@@ -2,11 +2,21 @@ package matchlang
 
 type Ast interface{}
 
+type NilAst interface{}
+
+var nilast NilAst
+
 type OperatorEnum int
 
 const (
 	EqualsOperator OperatorEnum = iota
 	NotEqualsOperator
+)
+
+type LogicalOperatorEnum int
+
+const (
+	AndOperator LogicalOperatorEnum = iota
 )
 
 type IdentifierEnum int
@@ -28,6 +38,11 @@ type Identifier struct {
 
 type Literal struct {
 	Value string
+}
+
+type LogicalExpression struct {
+	Operator    LogicalOperatorEnum
+	Left, Right Ast
 }
 
 func lexTokenToOperator(token LexToken) OperatorEnum {
@@ -53,11 +68,55 @@ func lexTokenToIdentifier(token LexToken) Identifier {
 	return Identifier{idtype}
 }
 
-func Parse(s string) Ast {
-	tokens := lex(s)
-	return Comparison{
-		Left:     lexTokenToIdentifier(tokens[0]),
-		Operator: lexTokenToOperator(tokens[1]),
-		Right:    Literal{tokens[2].Value},
+type ParserState int
+
+const (
+	ParserConsumingState ParserState = iota
+	ParserConsumedLeftState
+	ParserConsumedOperatorState
+	ParserConsumedRightState
+	ParserConsumedLogicalOperatorState
+	ParserDoneState
+)
+
+type Parser struct {
+	tokens []LexToken
+	pos    int
+	state  ParserState
+	ast    Ast
+}
+
+func (p *Parser) consume() bool {
+	if p.state == ParserDoneState {
+		return false
 	}
+
+	switch p.state {
+	case ParserConsumingState:
+		p.state = ParserConsumedLeftState
+	case ParserConsumedLeftState:
+		p.state = ParserConsumedOperatorState
+	case ParserConsumedOperatorState:
+		p.state = ParserConsumedRightState
+	case ParserConsumedRightState:
+		if p.pos < len(p.tokens) - 1 {
+			p.state = ParserConsumingState
+		} else {
+			p.state = ParserDoneState
+		}
+		p.ast = Comparison{
+			Left:     lexTokenToIdentifier(p.tokens[p.pos-3]),
+			Operator: lexTokenToOperator(p.tokens[p.pos-2]),
+			Right:    Literal{p.tokens[p.pos-1].Value},
+		}
+	}
+	p.pos++
+	return true
+}
+
+func Parse(s string) Ast {
+	parser := Parser{tokens: lex(s), pos: 0, state: ParserConsumingState, ast: nilast}
+	for parser.consume() {
+	}
+	return parser.ast
 }

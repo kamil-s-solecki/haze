@@ -82,3 +82,14 @@ func TestReturnAstWithStringLiteral(t *testing.T) {
 
 	assertAstEquals(t, got, want)
 }
+
+func TestReturnAstWithLogicalExpr(t *testing.T) {
+	var want Ast
+	left := Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+	right := Comparison{Operator: EqualsOperator, Left: Identifier{Value: SizeIdentifier}, Right: Literal{Value: "1500"}}
+	want = LogicalExpression{Operator: AndOperator, Left: left, Right: right}
+
+	got := Parse("code = 200 and size = 1500")
+
+	assertAstEquals(t, got, want)
+}

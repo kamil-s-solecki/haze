@@ -8,6 +8,7 @@ const (
 	TextToken
 	EqualsToken
 	NotEqualsToken
+	AndToken
 	LiteralToken
 )
 
@@ -19,10 +20,10 @@ type LexToken struct {
 type SplitterState int
 
 const (
-	ConsumingState SplitterState = iota
-	ConsumedState
-	ConsumingStringLiteralState
-	DoneState
+	SplitterConsumingState SplitterState = iota
+	SplitterConsumedState
+	SplitterConsumingStringLiteralState
+	SplitterDoneState
 )
 
 type Splitter struct {
@@ -33,12 +34,12 @@ type Splitter struct {
 }
 
 func (s *Splitter) consume() bool {
-	if s.state == DoneState {
+	if s.state == SplitterDoneState {
 		return false
 	}
 
 	if s.current == len(s.str) {
-		s.state = DoneState
+		s.state = SplitterDoneState
 		s.chunk = s.str[s.start:s.current]
 		return true
 	}
@@ -49,27 +50,27 @@ func (s *Splitter) consume() bool {
 	case '\'':
 		s.consumeQuote()
 	default:
-		s.state = ConsumingState
+		s.state = SplitterConsumingState
 	}
 	s.current++
 	return true
 }
 
 func (s *Splitter) consumeSpace() {
-	if s.state == ConsumingState {
+	if s.state == SplitterConsumingState {
 		s.chunk = s.str[s.start:s.current]
-		s.state = ConsumedState
+		s.state = SplitterConsumedState
 	}
 	s.start = s.current + 1
 }
 
 func (s *Splitter) consumeQuote() {
 	switch s.state {
-	case ConsumedState:
-		s.state = ConsumingStringLiteralState
+	case SplitterConsumedState:
+		s.state = SplitterConsumingStringLiteralState
 		s.start = s.current + 1
-	case ConsumingStringLiteralState:
-		s.state = ConsumedState
+	case SplitterConsumingStringLiteralState:
+		s.state = SplitterConsumedState
 		s.chunk = s.str[s.start : s.current-1]
 	}
 }
@@ -85,7 +86,7 @@ func (s *Splitter) emit() (string, bool) {
 
 func split(s string) []string {
 	result := []string{}
-	splitter := Splitter{state: ConsumedState, str: s}
+	splitter := Splitter{state: SplitterConsumedState, str: s}
 	for splitter.consume() {
 		if chunk, ok := splitter.emit(); ok {
 			result = append(result, chunk)
@@ -109,6 +110,8 @@ func lex(s string) []LexToken {
 			token = LexToken{Type: EqualsToken}
 		case "!=":
 			token = LexToken{Type: NotEqualsToken}
+		case "and":
+			token = LexToken{Type: AndToken}
 		default:
 			token = LexToken{Type: LiteralToken, Value: word}
 		}

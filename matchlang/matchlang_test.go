@@ -64,3 +64,12 @@ func TestReturnAstForSizeMatch(t *testing.T) {
 
 	assertAstEquals(t, got, want)
 }
+
+func TestReturnAstForBodyMatch(t *testing.T) {
+	var want Ast
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: TextIdentifier}, Right: Literal{Value: "foo"}}
+
+	got := Parse("text = foo")
+
+	assertAstEquals(t, got, want)
+}

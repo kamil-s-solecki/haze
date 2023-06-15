@@ -14,6 +14,7 @@ type IdentifierEnum int
 const (
 	CodeIdentifier IdentifierEnum = iota
 	SizeIdentifier
+	TextIdentifier
 )
 
 type Comparison struct {
@@ -46,6 +47,8 @@ func lexTokenToIdentifier(token LexToken) Identifier {
 		idtype = CodeIdentifier
 	case SizeToken:
 		idtype = SizeIdentifier
+	case TextToken:
+		idtype = TextIdentifier
 	}
 	return Identifier{idtype}
 }

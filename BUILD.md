@@ -10,14 +10,14 @@ make build
 make all
 ```
 
-### Format code
-```bash
-make format
-```
-
 ### Run all tests
 ```bash
 make test
+```
+
+### Run `go vet`
+```bash
+make vet
 ```
 
 ### Format code

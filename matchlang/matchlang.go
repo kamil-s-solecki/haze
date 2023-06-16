@@ -99,19 +99,32 @@ func (p *Parser) consume() bool {
 	case ParserConsumedOperatorState:
 		p.state = ParserConsumedRightState
 	case ParserConsumedRightState:
-		if p.pos < len(p.tokens) - 1 {
+		if p.pos < len(p.tokens)-1 {
 			p.state = ParserConsumingState
 		} else {
 			p.state = ParserDoneState
 		}
-		p.ast = Comparison{
-			Left:     lexTokenToIdentifier(p.tokens[p.pos-3]),
-			Operator: lexTokenToOperator(p.tokens[p.pos-2]),
-			Right:    Literal{p.tokens[p.pos-1].Value},
-		}
+		p.updateAst()
 	}
 	p.pos++
 	return true
+}
+
+func (p *Parser) updateAst() {
+	ast := Comparison{
+		Left:     lexTokenToIdentifier(p.tokens[p.pos-3]),
+		Operator: lexTokenToOperator(p.tokens[p.pos-2]),
+		Right:    Literal{p.tokens[p.pos-1].Value},
+	}
+	if p.ast == nilast {
+		p.ast = ast
+	} else {
+		p.ast = LogicalExpression{
+			Left:     p.ast,
+			Operator: AndOperator,
+			Right:    ast,
+		}
+	}
 }
 
 func Parse(s string) Ast {

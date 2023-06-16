@@ -17,6 +17,10 @@ func comparisonEquals(got, want Comparison) bool {
 	return got.Operator == want.Operator && astEquals(got.Left, want.Left) && astEquals(got.Right, want.Right)
 }
 
+func logicalExpressionEquals(got, want LogicalExpression) bool {
+	return got.Operator == want.Operator && astEquals(got.Left, want.Left) && astEquals(got.Right, want.Right)
+}
+
 func astEquals(got, want Ast) bool {
 	if reflect.TypeOf(got) != reflect.TypeOf(want) {
 		return false
@@ -28,6 +32,8 @@ func astEquals(got, want Ast) bool {
 		return identifierEquals(got.(Identifier), want.(Identifier))
 	case Comparison:
 		return comparisonEquals(got.(Comparison), want.(Comparison))
+	case LogicalExpression:
+		return logicalExpressionEquals(got.(LogicalExpression), want.(LogicalExpression))
 	}
 	return false
 }

@@ -2,10 +2,6 @@ package matchlang
 
 type Ast interface{}
 
-type NilAst interface{}
-
-var nilast NilAst
-
 type OperatorEnum int
 
 const (
@@ -128,9 +124,11 @@ func (p *Parser) updateAst() {
 		Operator: lexTokenToOperator(p.tokens[p.pos-2]),
 		Right:    Literal{p.tokens[p.pos-1].Value},
 	}
-	if p.ast == nilast {
+
+	switch p.ast.(type) {
+	case nil:
 		p.ast = ast
-	} else {
+	default:
 		p.ast = LogicalExpression{
 			Left:     p.ast,
 			Operator: p.currentLogicalOp,
@@ -140,7 +138,7 @@ func (p *Parser) updateAst() {
 }
 
 func Parse(s string) Ast {
-	parser := Parser{tokens: lex(s), pos: 0, state: ParserConsumingState, ast: nilast}
+	parser := Parser{tokens: lex(s), state: ParserConsumingState}
 	for parser.consume() {
 	}
 	return parser.ast

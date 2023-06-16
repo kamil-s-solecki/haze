@@ -17,6 +17,7 @@ type LogicalOperatorEnum int
 
 const (
 	AndOperator LogicalOperatorEnum = iota
+	OrOperator
 )
 
 type IdentifierEnum int
@@ -68,6 +69,16 @@ func lexTokenToIdentifier(token LexToken) Identifier {
 	return Identifier{idtype}
 }
 
+func lexTokenToLogicalOperator(token LexToken) LogicalOperatorEnum {
+	switch token.Type {
+	case AndToken:
+		return AndOperator
+	case OrToken:
+		return OrOperator
+	}
+	return -1
+}
+
 type ParserState int
 
 const (
@@ -75,15 +86,15 @@ const (
 	ParserConsumedLeftState
 	ParserConsumedOperatorState
 	ParserConsumedRightState
-	ParserConsumedLogicalOperatorState
 	ParserDoneState
 )
 
 type Parser struct {
-	tokens []LexToken
-	pos    int
-	state  ParserState
-	ast    Ast
+	tokens           []LexToken
+	pos              int
+	state            ParserState
+	currentLogicalOp LogicalOperatorEnum
+	ast              Ast
 }
 
 func (p *Parser) consume() bool {
@@ -100,6 +111,7 @@ func (p *Parser) consume() bool {
 		p.state = ParserConsumedRightState
 	case ParserConsumedRightState:
 		if p.pos < len(p.tokens)-1 {
+			p.currentLogicalOp = lexTokenToLogicalOperator(p.tokens[p.pos])
 			p.state = ParserConsumingState
 		} else {
 			p.state = ParserDoneState
@@ -121,7 +133,7 @@ func (p *Parser) updateAst() {
 	} else {
 		p.ast = LogicalExpression{
 			Left:     p.ast,
-			Operator: AndOperator,
+			Operator: p.currentLogicalOp,
 			Right:    ast,
 		}
 	}

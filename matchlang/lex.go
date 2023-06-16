@@ -9,6 +9,7 @@ const (
 	EqualsToken
 	NotEqualsToken
 	AndToken
+	OrToken
 	LiteralToken
 )
 
@@ -112,6 +113,8 @@ func lex(s string) []LexToken {
 			token = LexToken{Type: NotEqualsToken}
 		case "and":
 			token = LexToken{Type: AndToken}
+		case "or":
+			token = LexToken{Type: OrToken}
 		default:
 			token = LexToken{Type: LiteralToken, Value: word}
 		}

@@ -51,18 +51,19 @@ func (s *Splitter) consume() bool {
 	case '\'':
 		s.consumeQuote()
 	default:
-		s.state = SplitterConsumingState
+		s.consumeOther()
 	}
 	s.current++
 	return true
 }
 
 func (s *Splitter) consumeSpace() {
-	if s.state == SplitterConsumingState {
+	switch s.state {
+	case SplitterConsumingState:
 		s.chunk = s.str[s.start:s.current]
 		s.state = SplitterConsumedState
+		s.start = s.current + 1
 	}
-	s.start = s.current + 1
 }
 
 func (s *Splitter) consumeQuote() {
@@ -72,7 +73,15 @@ func (s *Splitter) consumeQuote() {
 		s.start = s.current + 1
 	case SplitterConsumingStringLiteralState:
 		s.state = SplitterConsumedState
-		s.chunk = s.str[s.start : s.current-1]
+		s.chunk = s.str[s.start:s.current]
+	}
+}
+
+func (s *Splitter) consumeOther() {
+	switch s.state {
+	case SplitterConsumingStringLiteralState:
+	default:
+		s.state = SplitterConsumingState
 	}
 }
 

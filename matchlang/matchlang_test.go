@@ -82,7 +82,7 @@ func TestReturnAstForTextMatch(t *testing.T) {
 
 func TestReturnAstWithStringLiteral(t *testing.T) {
 	var want Ast
-	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: TextIdentifier}, Right: Literal{Value: "foo"}}
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: TextIdentifier}, Right: Literal{Value: "foo bar"}}
 
 	got := Parse("text = 'foo bar'")
 

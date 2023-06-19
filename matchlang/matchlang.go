@@ -106,34 +106,60 @@ func (p *Parser) consume() bool {
 	case ParserConsumedOperatorState:
 		p.state = ParserConsumedRightState
 	case ParserConsumedRightState:
+		p.updateAst()
 		if p.pos < len(p.tokens)-1 {
 			p.currentLogicalOp = lexTokenToLogicalOperator(p.tokens[p.pos])
 			p.state = ParserConsumingState
 		} else {
 			p.state = ParserDoneState
 		}
-		p.updateAst()
 	}
 	p.pos++
 	return true
 }
 
 func (p *Parser) updateAst() {
-	ast := Comparison{
+	switch p.ast.(type) {
+	case nil:
+		p.ast = p.currentLeaf()
+	case LogicalExpression:
+		if p.ast.(LogicalExpression).Operator == AndOperator {
+			p.addNodeAbove()
+		} else {
+			p.addNodeBelow()
+		}
+	case Comparison:
+		p.addNodeAbove()
+	}
+}
+
+func (p *Parser) addNodeAbove() {
+	p.ast = LogicalExpression{
+		Left:     p.ast,
+		Operator: p.currentLogicalOp,
+		Right:    p.currentLeaf(),
+	}
+}
+
+func (p *Parser) addNodeBelow() {
+	oldAst := p.ast.(LogicalExpression)
+	right := LogicalExpression{
+		Left:     oldAst.Right,
+		Operator: p.currentLogicalOp,
+		Right:    p.currentLeaf(),
+	}
+	p.ast = LogicalExpression{
+		Left:     oldAst.Left,
+		Operator: oldAst.Operator,
+		Right:    right,
+	}
+}
+
+func (p *Parser) currentLeaf() Comparison {
+	return Comparison{
 		Left:     lexTokenToIdentifier(p.tokens[p.pos-3]),
 		Operator: lexTokenToOperator(p.tokens[p.pos-2]),
 		Right:    Literal{p.tokens[p.pos-1].Value},
-	}
-
-	switch p.ast.(type) {
-	case nil:
-		p.ast = ast
-	default:
-		p.ast = LogicalExpression{
-			Left:     p.ast,
-			Operator: p.currentLogicalOp,
-			Right:    ast,
-		}
 	}
 }
 

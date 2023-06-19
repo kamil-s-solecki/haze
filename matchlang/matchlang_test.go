@@ -110,3 +110,34 @@ func TestReturnAstWithLogicalExprOr(t *testing.T) {
 
 	assertAstEquals(t, got, want)
 }
+
+func TestReturnAstWithOperatorPrecedence(t *testing.T) {
+	var want Ast
+	left := Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+	right := LogicalExpression{
+		Operator: AndOperator,
+		Left:     Comparison{Operator: EqualsOperator, Left: Identifier{Value: SizeIdentifier}, Right: Literal{Value: "1500"}},
+		Right:    Comparison{Operator: EqualsOperator, Left: Identifier{Value: TextIdentifier}, Right: Literal{Value: "foo"}},
+	}
+	want = LogicalExpression{Operator: OrOperator, Left: left, Right: right}
+
+	got := Parse("code = 200 or size = 1500 and text = foo")
+
+	assertAstEquals(t, got, want)
+}
+
+func TestReturnAstWithOperatorPrecedenceWithOrInTheMiddle(t *testing.T) {
+	comp := func(val string) Comparison {
+		return Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: val}}
+	}
+	var want Ast
+	want = LogicalExpression{
+		Left:     LogicalExpression{Left: comp("200"), Operator: AndOperator, Right: comp("300")},
+		Operator: OrOperator,
+		Right:    LogicalExpression{Left: comp("400"), Operator: AndOperator, Right: comp("500")},
+	}
+
+	got := Parse("code = 200 and code = 300 or code = 400 and code = 500")
+
+	assertAstEquals(t, got, want)
+}

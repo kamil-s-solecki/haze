@@ -100,7 +100,9 @@ func (p *Parser) consume() bool {
 
 	switch p.state {
 	case ParserConsumingState:
-		p.state = ParserConsumedLeftState
+		if p.currentToken().Type != OpenBracketToken {
+			p.state = ParserConsumedLeftState
+		}
 	case ParserConsumedLeftState:
 		p.state = ParserConsumedOperatorState
 	case ParserConsumedOperatorState:
@@ -108,7 +110,7 @@ func (p *Parser) consume() bool {
 	case ParserConsumedRightState:
 		p.updateAst()
 		if p.pos < len(p.tokens)-1 {
-			p.currentLogicalOp = lexTokenToLogicalOperator(p.tokens[p.pos])
+			p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())
 			p.state = ParserConsumingState
 		} else {
 			p.state = ParserDoneState
@@ -161,6 +163,10 @@ func (p *Parser) currentLeaf() Comparison {
 		Operator: lexTokenToOperator(p.tokens[p.pos-2]),
 		Right:    Literal{p.tokens[p.pos-1].Value},
 	}
+}
+
+func (p *Parser) currentToken() LexToken {
+	return p.tokens[p.pos]
 }
 
 func Parse(s string) Ast {

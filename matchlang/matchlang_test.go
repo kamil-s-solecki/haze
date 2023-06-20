@@ -141,3 +141,12 @@ func TestReturnAstWithOperatorPrecedenceWithOrInTheMiddle(t *testing.T) {
 
 	assertAstEquals(t, got, want)
 }
+
+func TestIgnoreBrackets(t *testing.T) {
+	var want Ast
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+
+	got := Parse("(code = 200)")
+
+	assertAstEquals(t, got, want)
+}

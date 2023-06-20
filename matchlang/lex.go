@@ -11,6 +11,8 @@ const (
 	AndToken
 	OrToken
 	LiteralToken
+	OpenBracketToken
+	CloseBracketToken
 )
 
 type LexToken struct {
@@ -50,6 +52,10 @@ func (s *Splitter) consume() bool {
 		s.consumeSpace()
 	case '\'':
 		s.consumeQuote()
+	case '(':
+		s.consumeOpenBracket()
+	case ')':
+		s.consumeCloseBracket()
 	default:
 		s.consumeOther()
 	}
@@ -74,6 +80,24 @@ func (s *Splitter) consumeQuote() {
 	case SplitterConsumingStringLiteralState:
 		s.state = SplitterConsumedState
 		s.chunk = s.str[s.start:s.current]
+	}
+}
+
+func (s *Splitter) consumeOpenBracket() {
+	s.chunk = "("
+	s.start = s.current + 1
+}
+
+func (s *Splitter) consumeCloseBracket() {
+	switch s.state {
+	case SplitterConsumingState:
+		s.chunk = s.str[s.start:s.current]
+		s.state = SplitterConsumedState
+		s.start = s.current + 1
+		s.current--
+	case SplitterConsumedState:
+		s.chunk = ")"
+		s.start = s.current + 1
 	}
 }
 
@@ -124,10 +148,16 @@ func lex(s string) []LexToken {
 			token = LexToken{Type: AndToken}
 		case "or":
 			token = LexToken{Type: OrToken}
+		case "(":
+			token = LexToken{Type: OpenBracketToken}
+		case ")":
+			token = LexToken{Type: CloseBracketToken}
 		default:
 			token = LexToken{Type: LiteralToken, Value: word}
 		}
+
 		result = append(result, token)
 	}
+
 	return result
 }

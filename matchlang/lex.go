@@ -97,6 +97,7 @@ func (s *Splitter) consumeCloseBracket() {
 		s.current--
 	case SplitterConsumedState:
 		s.chunk = ")"
+		s.state = SplitterConsumingState
 		s.start = s.current + 1
 	}
 }
@@ -158,6 +159,5 @@ func lex(s string) []LexToken {
 
 		result = append(result, token)
 	}
-
 	return result
 }

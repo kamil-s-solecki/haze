@@ -86,11 +86,12 @@ const (
 )
 
 type Parser struct {
-	tokens           []LexToken
-	pos              int
-	state            ParserState
-	currentLogicalOp LogicalOperatorEnum
-	ast              Ast
+	tokens              []LexToken
+	pos                 int
+	state               ParserState
+	currentLogicalOp    LogicalOperatorEnum
+	isLastExprBracketed bool
+	ast                 Ast
 }
 
 func (p *Parser) consume() bool {
@@ -125,7 +126,7 @@ func (p *Parser) updateAst() {
 	case nil:
 		p.ast = p.currentLeaf()
 	case LogicalExpression:
-		if p.ast.(LogicalExpression).Operator == AndOperator {
+		if p.ast.(LogicalExpression).Operator == AndOperator || p.isLastExprBracketed {
 			p.addNodeAbove()
 		} else {
 			p.addNodeBelow()
@@ -133,6 +134,7 @@ func (p *Parser) updateAst() {
 	case Comparison:
 		p.addNodeAbove()
 	}
+	p.isLastExprBracketed = false
 }
 
 func (p *Parser) addNodeAbove() {
@@ -180,6 +182,7 @@ func (p *Parser) isCurrentTokenBracket() bool {
 
 func (p *Parser) readTillLogicalOp() {
 	if p.isCurrentTokenBracket() {
+		p.isLastExprBracketed = true
 		p.pos++
 	}
 	p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())

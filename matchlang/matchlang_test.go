@@ -151,6 +151,15 @@ func TestIgnoreBrackets(t *testing.T) {
 	assertAstEquals(t, got, want)
 }
 
+func TestIgnoreMultipleBrackets(t *testing.T) {
+	var want Ast
+	want = Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: "200"}}
+
+	got := Parse("((code = 200))")
+
+	assertAstEquals(t, got, want)
+}
+
 func TestIgnoreBracketsWithLogicalExpr(t *testing.T) {
 	comp := func(val string) Comparison {
 		return Comparison{Operator: EqualsOperator, Left: Identifier{Value: CodeIdentifier}, Right: Literal{Value: val}}

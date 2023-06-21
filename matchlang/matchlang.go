@@ -114,8 +114,8 @@ func (p *Parser) consume() bool {
 		p.state = ParserConsumedRightState
 	case ParserConsumedRightState:
 		p.updateAst()
+		p.readTillLogicalOpOrEnd()
 		if p.canConsumeMore() {
-			p.readTillLogicalOp()
 			p.state = ParserConsumingState
 		} else {
 			p.state = ParserDoneState
@@ -183,14 +183,16 @@ func (p *Parser) isCurrentTokenBracket() bool {
 	}
 }
 
-func (p *Parser) readTillLogicalOp() {
-	for p.isCurrentTokenBracket() {
+func (p *Parser) readTillLogicalOpOrEnd() {
+	for p.canConsumeMore() && p.isCurrentTokenBracket() {
 		p.bracketsDepth--
 		p.pos++
 	}
-	p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())
-	p.isLastOpBracketed = p.isCurrentOpBracketed
-	p.isCurrentOpBracketed = p.bracketsDepth > 0
+	if p.canConsumeMore() {
+		p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())
+		p.isLastOpBracketed = p.isCurrentOpBracketed
+		p.isCurrentOpBracketed = p.bracketsDepth > 0
+	}
 }
 
 func (p *Parser) canConsumeMore() bool {

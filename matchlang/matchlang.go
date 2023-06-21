@@ -90,9 +90,9 @@ type Parser struct {
 	pos                  int
 	state                ParserState
 	currentLogicalOp     LogicalOperatorEnum
-	isInBrackets         bool
 	isCurrentOpBracketed bool
 	isLastOpBracketed    bool
+	bracketsDepth        int
 	ast                  Ast
 }
 
@@ -106,7 +106,7 @@ func (p *Parser) consume() bool {
 		if !p.isCurrentTokenBracket() {
 			p.state = ParserConsumedLeftState
 		} else {
-			p.isInBrackets = true
+			p.bracketsDepth++
 		}
 	case ParserConsumedLeftState:
 		p.state = ParserConsumedOperatorState
@@ -184,13 +184,13 @@ func (p *Parser) isCurrentTokenBracket() bool {
 }
 
 func (p *Parser) readTillLogicalOp() {
-	if p.isCurrentTokenBracket() {
-		p.isInBrackets = false
+	for p.isCurrentTokenBracket() {
+		p.bracketsDepth--
 		p.pos++
 	}
 	p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())
 	p.isLastOpBracketed = p.isCurrentOpBracketed
-	p.isCurrentOpBracketed = p.isInBrackets
+	p.isCurrentOpBracketed = p.bracketsDepth > 0
 }
 
 func (p *Parser) canConsumeMore() bool {

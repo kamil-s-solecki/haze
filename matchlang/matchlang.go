@@ -90,9 +90,9 @@ type Parser struct {
 	pos                  int
 	state                ParserState
 	currentLogicalOp     LogicalOperatorEnum
-	isCurrentOpBracketed bool
-	isLastOpBracketed    bool
 	bracketsDepth        int
+	currentOperatorDepth int
+	lastOperatorDepth    int
 	ast                  Ast
 }
 
@@ -130,14 +130,25 @@ func (p *Parser) updateAst() {
 	case nil:
 		p.ast = p.currentLeaf()
 	case LogicalExpression:
-		if p.ast.(LogicalExpression).Operator == AndOperator || p.isLastOpBracketed {
-			p.addNodeAbove()
-		} else {
-			p.addNodeBelow()
-		}
+		p.addNode()
 	case Comparison:
 		p.addNodeAbove()
 	}
+}
+
+func (p *Parser) addNode() {
+	if p.shouldAddNodeAbove() {
+		p.addNodeAbove()
+	} else {
+		p.addNodeBelow()
+	}
+}
+
+func (p *Parser) shouldAddNodeAbove() bool {
+	lastOperatorDeaperThanCurrent := p.lastOperatorDepth > p.currentOperatorDepth
+	lastOperatorIsAndOnTheSameLevel := p.ast.(LogicalExpression).Operator == AndOperator && p.lastOperatorDepth == p.currentOperatorDepth
+	return lastOperatorDeaperThanCurrent || lastOperatorIsAndOnTheSameLevel
+
 }
 
 func (p *Parser) addNodeAbove() {
@@ -190,8 +201,8 @@ func (p *Parser) readTillLogicalOpOrEnd() {
 	}
 	if p.canConsumeMore() {
 		p.currentLogicalOp = lexTokenToLogicalOperator(p.currentToken())
-		p.isLastOpBracketed = p.isCurrentOpBracketed
-		p.isCurrentOpBracketed = p.bracketsDepth > 0
+		p.lastOperatorDepth = p.currentOperatorDepth
+		p.currentOperatorDepth = p.bracketsDepth
 	}
 }
 

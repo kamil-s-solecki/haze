@@ -23,3 +23,30 @@ func TestCompiledShouldReport500(t *testing.T) {
 
 	testutils.AssertTrue(t, got)
 }
+
+func TestCompiledShouldReport403(t *testing.T) {
+	res := http.Response{Code: 403}
+	checker := Compile("code != 200")
+
+	got := checker(res)
+
+	testutils.AssertTrue(t, got)
+}
+
+func TestCompiledShouldMatchLength(t *testing.T) {
+	res := http.Response{Code: 200, Length: 1500}
+	checker := Compile("size = 1500")
+
+	got := checker(res)
+
+	testutils.AssertTrue(t, got)
+}
+
+func TestCompiledShouldMatchText(t *testing.T) {
+	res := http.Response{Code: 200, Raw: []byte("hello foo bar")}
+	checker := Compile("text = foo")
+
+	got := checker(res)
+
+	testutils.AssertTrue(t, got)
+}

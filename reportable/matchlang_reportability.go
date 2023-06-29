@@ -9,9 +9,30 @@ type Checker func(http.Response) bool
 
 func Compile(expr string) Checker {
 	ast := matchlang.Parse(expr)
-	matcher := comparisonToChecker(ast.(matchlang.Comparison))
-	return func(r http.Response) bool {
-		return matcher(r)
+	return astToChecker(ast)
+}
+
+func astToChecker(ast matchlang.Ast) Checker {
+	switch ast.(type) {
+	case matchlang.Comparison:
+		return comparisonToChecker(ast.(matchlang.Comparison))
+	case matchlang.LogicalExpression:
+		return logicalExpressionToChecker(ast.(matchlang.LogicalExpression))
+	}
+	return nil
+}
+
+func logicalExpressionToChecker(lexp matchlang.LogicalExpression) Checker {
+	left := astToChecker(lexp.Left)
+	right := astToChecker(lexp.Right)
+	if lexp.Operator == matchlang.AndOperator {
+		return func(r http.Response) bool {
+			return left(r) && right(r)
+		}
+	} else {
+		return func(r http.Response) bool {
+			return left(r) || right(r)
+		}
 	}
 }
 

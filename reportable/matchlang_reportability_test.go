@@ -50,3 +50,21 @@ func TestCompiledShouldMatchText(t *testing.T) {
 
 	testutils.AssertTrue(t, got)
 }
+
+func TestCompiledShouldMatchBothConditions(t *testing.T) {
+	res := http.Response{Code: 200, Length: 1000}
+	checker := Compile("code = 200 and size = 1500")
+
+	got := checker(res)
+
+	testutils.AssertFalse(t, got)
+}
+
+func TestCompiledShouldMatchOneCondition(t *testing.T) {
+	res := http.Response{Code: 200, Length: 1000}
+	checker := Compile("code = 200 or size = 1500")
+
+	got := checker(res)
+
+	testutils.AssertTrue(t, got)
+}

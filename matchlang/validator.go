@@ -12,24 +12,46 @@ func Validate(expr string) (bool, error) {
 
 	tokens := lex(expr)
 
-	if err := validateComparison(tokens); err != nil {
+	if err := validateComparison(tokens, 0); err != nil {
 		return false, err
+	}
+
+	if len(tokens) > 3 {
+		if err := validateOperator(tokens[3]); err != nil {
+			return false, err
+		}
+
+		if err := validateComparison(tokens, 4); err != nil {
+			return false, err
+		}
 	}
 
 	return true, nil
 }
 
-func validateComparison(tokens []LexToken) error {
-	if !isIdentifier(tokens[0]) {
-		return fmt.Errorf("%v is not a valid identifier!", tokens[0].Value)
+func validateOperator(token LexToken) error {
+	switch token.Type {
+	case OrToken, AndToken:
+		return nil
+	default:
+		return fmt.Errorf("%v is not a valid logical operator!", token.Value)
+	}
+}
+
+func validateComparison(tokens []LexToken, idx int) error {
+	idt := tokens[idx+0]
+	if !isIdentifier(idt) {
+		return fmt.Errorf("%v is not a valid identifier!", idt.Value)
 	}
 
-	if !isOperator(tokens[1]) {
-		return fmt.Errorf("%v is not a valid operator!", tokens[1].Value)
+	op := tokens[idx+1]
+	if !isOperator(op) {
+		return fmt.Errorf("%v is not a valid operator!", op.Value)
 	}
 
-	if !isLiteral(tokens[2]) {
-		return fmt.Errorf("%v is not a valid literal!", tokens[2].Value)
+	lit := tokens[idx+2]
+	if !isLiteral(lit) {
+		return fmt.Errorf("%v is not a valid literal!", lit.Value)
 	}
 
 	return nil

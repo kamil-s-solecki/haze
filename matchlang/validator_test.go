@@ -46,3 +46,17 @@ func TestEpressionWithoutALiteralIsInvalid(t *testing.T) {
 	testutils.AssertFalse(t, ok)
 	testutils.AssertErrorEquals(t, err, "code is not a valid literal!")
 }
+
+func TestEpressionWithInvalidOperatorIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 foo text = bar")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "foo is not a valid logical operator!")
+}
+
+func TestExpressionWithInvalidSecondComparisonIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 and foo = bar")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "foo is not a valid identifier!")
+}

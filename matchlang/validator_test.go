@@ -88,3 +88,10 @@ func TestExpressionWithoutThirdComparisonIsInvalid(t *testing.T) {
 	testutils.AssertFalse(t, ok)
 	testutils.AssertErrorEquals(t, err, "Expected a comparison after 'and'!")
 }
+
+func TestExpressionInBracketsIsValid(t *testing.T) {
+	ok, err := Validate("(code = 200)")
+
+	testutils.AssertTrue(t, ok)
+	testutils.AssertNil(t, err)
+}

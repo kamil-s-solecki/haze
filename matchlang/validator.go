@@ -36,6 +36,20 @@ func (v *Validator) validate() error {
 }
 
 func (v *Validator) next() (bool, error) {
+	if v.pos >= len(v.tokens) {
+		switch v.state {
+		case ValidatorExpectComparisonState:
+			return false, fmt.Errorf("Expected a comparison after '%v'!", v.tokens[v.pos-1].Value)
+		default:
+			return false, nil
+		}
+	}
+
+	if v.isCurrentTokenBracket() {
+		v.pos += 1
+		return true, nil
+	}
+
 	switch v.state {
 	case ValidatorExpectComparisonState:
 		if err := validateComparison(v.tokens, v.pos); err != nil {
@@ -44,9 +58,6 @@ func (v *Validator) next() (bool, error) {
 		v.pos += 3
 		v.state = ValidatorAfterComparisonState
 	case ValidatorAfterComparisonState:
-		if v.pos >= len(v.tokens) {
-			return false, nil
-		}
 		if err := validateOperator(v.tokens[v.pos]); err != nil {
 			return false, err
 		}
@@ -55,6 +66,15 @@ func (v *Validator) next() (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (v *Validator) isCurrentTokenBracket() bool {
+	switch v.tokens[v.pos].Type {
+	case OpenBracketToken, CloseBracketToken:
+		return true
+	default:
+		return false
+	}
 }
 
 func validateOperator(token LexToken) error {
@@ -67,10 +87,6 @@ func validateOperator(token LexToken) error {
 }
 
 func validateComparison(tokens []LexToken, idx int) error {
-	if len(tokens) <= idx {
-		return fmt.Errorf("Expected a comparison after '%v'!", tokens[idx-1].Value)
-	}
-
 	idt := tokens[idx+0]
 	if !isIdentifier(idt) {
 		return fmt.Errorf("%v is not a valid identifier!", idt.Value)

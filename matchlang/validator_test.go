@@ -60,3 +60,31 @@ func TestExpressionWithInvalidSecondComparisonIsInvalid(t *testing.T) {
 	testutils.AssertFalse(t, ok)
 	testutils.AssertErrorEquals(t, err, "foo is not a valid identifier!")
 }
+
+func TestExpressionWithSecondComparisonWithoutALiteralIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 and code =")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "Expected a literal after '='!")
+}
+
+func TestExpressionWithSecondComparisonWithoutAnOperatorIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 and code")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "Expected an operator after 'code'!")
+}
+
+func TestExpressionWithoutSecondComparisonIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 and")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "Expected a comparison after 'and'!")
+}
+
+func TestExpressionWithoutThirdComparisonIsInvalid(t *testing.T) {
+	ok, err := Validate("code = 200 and code = 200 and")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "Expected a comparison after 'and'!")
+}

@@ -12,6 +12,20 @@ func AssertEquals[T comparable](t *testing.T, got T, want T) {
 	}
 }
 
+func AssertNil(t *testing.T, got any) {
+	if got != nil {
+		t.Errorf("got %v, wanted nil", got)
+	}
+}
+
+func AssertErrorEquals(t *testing.T, got error, want string) {
+	if got == nil {
+		t.Errorf("got nil, expected an error '%v'", want)
+	} else {
+		AssertEquals(t, got.Error(), want)
+	}
+}
+
 func AssertFalse(t *testing.T, got bool) {
 	if got {
 		t.Errorf("got true, expected false")

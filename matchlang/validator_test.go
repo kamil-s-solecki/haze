@@ -32,3 +32,17 @@ func TestExpressionThatDoesNotStartWithAndIdentifierIsInvalid(t *testing.T) {
 	testutils.AssertFalse(t, ok)
 	testutils.AssertErrorEquals(t, err, "foo is not a valid identifier!")
 }
+
+func TestEpressionWithoutAnOperatorIsInvalid(t *testing.T) {
+	ok, err := Validate("code foo 200")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "foo is not a valid operator!")
+}
+
+func TestEpressionWithoutALiteralIsInvalid(t *testing.T) {
+	ok, err := Validate("code = code")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "code is not a valid literal!")
+}

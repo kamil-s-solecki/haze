@@ -136,23 +136,23 @@ func lex(s string) []LexToken {
 		var token LexToken
 		switch word {
 		case "code":
-			token = LexToken{Type: CodeToken}
+			token = LexToken{Type: CodeToken, Value: word}
 		case "size":
-			token = LexToken{Type: SizeToken}
+			token = LexToken{Type: SizeToken, Value: word}
 		case "text":
-			token = LexToken{Type: TextToken}
+			token = LexToken{Type: TextToken, Value: word}
 		case "=":
-			token = LexToken{Type: EqualsToken}
+			token = LexToken{Type: EqualsToken, Value: word}
 		case "!=":
-			token = LexToken{Type: NotEqualsToken}
+			token = LexToken{Type: NotEqualsToken, Value: word}
 		case "and":
-			token = LexToken{Type: AndToken}
+			token = LexToken{Type: AndToken, Value: word}
 		case "or":
-			token = LexToken{Type: OrToken}
+			token = LexToken{Type: OrToken, Value: word}
 		case "(":
-			token = LexToken{Type: OpenBracketToken}
+			token = LexToken{Type: OpenBracketToken, Value: word}
 		case ")":
-			token = LexToken{Type: CloseBracketToken}
+			token = LexToken{Type: CloseBracketToken, Value: word}
 		default:
 			token = LexToken{Type: LiteralToken, Value: word}
 		}

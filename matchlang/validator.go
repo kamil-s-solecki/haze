@@ -11,13 +11,53 @@ func Validate(expr string) (bool, error) {
 	}
 
 	tokens := lex(expr)
-	if len(tokens) == 0 {
-		return false, fmt.Errorf("The expression cannot be empty!")
+
+	if err := validateComparison(tokens); err != nil {
+		return false, err
 	}
-	switch tokens[0].Type {
+
+	return true, nil
+}
+
+func validateComparison(tokens []LexToken) error {
+	if !isIdentifier(tokens[0]) {
+		return fmt.Errorf("%v is not a valid identifier!", tokens[0].Value)
+	}
+
+	if !isOperator(tokens[1]) {
+		return fmt.Errorf("%v is not a valid operator!", tokens[1].Value)
+	}
+
+	if !isLiteral(tokens[2]) {
+		return fmt.Errorf("%v is not a valid literal!", tokens[2].Value)
+	}
+
+	return nil
+}
+
+func isIdentifier(token LexToken) bool {
+	switch token.Type {
 	case CodeToken, SizeToken, TextToken:
-		return true, nil
+		return true
 	default:
-		return false, fmt.Errorf("%v is not a valid identifier!", tokens[0].Value)
+		return false
+	}
+}
+
+func isOperator(token LexToken) bool {
+	switch token.Type {
+	case EqualsToken, NotEqualsToken:
+		return true
+	default:
+		return false
+	}
+}
+
+func isLiteral(token LexToken) bool {
+	switch token.Type {
+	case LiteralToken:
+		return true
+	default:
+		return false
 	}
 }

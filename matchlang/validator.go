@@ -13,9 +13,10 @@ const (
 )
 
 type Validator struct {
-	tokens []LexToken
-	pos    int
-	state  ValidatorState
+	tokens       []LexToken
+	pos          int
+	bracketDepth int
+	state        ValidatorState
 }
 
 func Validate(expr string) (bool, error) {
@@ -37,6 +38,9 @@ func (v *Validator) validate() error {
 
 func (v *Validator) next() (bool, error) {
 	if v.pos >= len(v.tokens) {
+		if v.bracketDepth > 0 {
+			return false, fmt.Errorf("A closing bracket is missing!")
+		}
 		switch v.state {
 		case ValidatorExpectComparisonState:
 			return false, fmt.Errorf("Expected a comparison after '%v'!", v.tokens[v.pos-1].Value)
@@ -46,8 +50,7 @@ func (v *Validator) next() (bool, error) {
 	}
 
 	if v.isCurrentTokenBracket() {
-		v.pos += 1
-		return true, nil
+		return v.handleBracket()
 	}
 
 	switch v.state {
@@ -75,6 +78,20 @@ func (v *Validator) isCurrentTokenBracket() bool {
 	default:
 		return false
 	}
+}
+
+func (v *Validator) handleBracket() (bool, error) {
+	switch v.tokens[v.pos].Type {
+	case OpenBracketToken:
+		v.bracketDepth++
+	case CloseBracketToken:
+		v.bracketDepth--
+	}
+	if v.bracketDepth < 0 {
+		return false, fmt.Errorf("The expression has a redundant closing bracket!")
+	}
+	v.pos += 1
+	return true, nil
 }
 
 func validateOperator(token LexToken) error {

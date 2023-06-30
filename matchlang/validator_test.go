@@ -95,3 +95,17 @@ func TestExpressionInBracketsIsValid(t *testing.T) {
 	testutils.AssertTrue(t, ok)
 	testutils.AssertNil(t, err)
 }
+
+func TestExpressionWithUnmatchedBracketsIsInvalid(t *testing.T) {
+	ok, err := Validate("((code = 200)")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "A closing bracket is missing!")
+}
+
+func TestExpressionWithUnmatchedClosingBracketsIsInvalid(t *testing.T) {
+	ok, err := Validate("(code = 200))")
+
+	testutils.AssertFalse(t, ok)
+	testutils.AssertErrorEquals(t, err, "The expression has a redundant closing bracket!")
+}
